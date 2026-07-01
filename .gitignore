@@ -1,0 +1,26 @@
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments (Secrets)
+.env
+
+# Databases
+*.db
+*.sqlite3
+.registration_data.db
+
+# Virtual Environments
+venv/
+env/
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Trash/
