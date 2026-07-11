@@ -29,3 +29,6 @@ class User(Base):
 
     # linking user to role
     roles = relationship("Role", secondary=user_role)
+
+    # linking user to post
+    posts = relationship("Post", back_populates="author" )
