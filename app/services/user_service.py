@@ -1,8 +1,11 @@
+from datetime import timedelta
+
 from fastapi import HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from app.core.security import get_password_hash
+from app.core.security import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, get_password_hash, verify_password
 from app.models.user import Role, User
-from app.schemas.user import OTPVerify, UserCreate
+from app.schemas.user import OTPVerify, UserCreate, UserLogin, Token
 from app.utils.helpers import generate_otp, send_otp_email
 from app.core.constants import RoleNames
 
@@ -16,6 +19,8 @@ class ErrorMessage:
     USER_NOT_FOUND = "user not found."
     ALREADY_VERIFIED = "Account is already verified."
     INVALID_OTP = "Invalid OTP."
+    INVALID_CREDENTIALS = "Incorrect email or password!"
+    NOT_VERIFIED = "Account not verified! Please verify your account."
 
 
 
@@ -78,3 +83,30 @@ def verify_user_otp(verify_data:OTPVerify, db:Session):
         "status": "Succes",
         "message": SuccesMessage.VERIFICATION_SUCCESS
     }
+
+def login_user(login_data:OAuth2PasswordRequestForm, db:Session) -> Token:
+
+    # check if user exixts
+    user = db.query(User).filter(User.email == login_data.username).first()
+    if not user:
+        raise HTTPException(status_code=401, detail=ErrorMessage.INVALID_CREDENTIALS)
+    
+    # verify password
+    if not verify_password(login_data.password, user.password_hash):
+        raise HTTPException(status_code=401, detail=ErrorMessage.INVALID_CREDENTIALS)
+    
+    # check account verification
+    if not user.is_verified:
+        raise HTTPException(status_code=400, detail=ErrorMessage.NOT_VERIFIED)
+    
+    # generate JWT token
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    access_token = create_access_token(
+        data={"sub": str(user.id)}, expires_delta=access_token_expires
+    )
+
+    return Token(access_token = access_token, token_type="bearer")
+    
+
+
