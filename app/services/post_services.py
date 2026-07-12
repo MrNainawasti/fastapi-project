@@ -1,16 +1,17 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.schemas.post import PostCreate, PostUpdate
-from app.crud import post as crud_post
+from app.repository.post import post_repo
+
 
 def create_post(db: Session, post_in: PostCreate, user_id: int):
-    return crud_post.create(db= db, post_in= post_in, author_id=user_id)
+    return post_repo.create(db= db, obj_in= post_in, author_id=user_id)
 
 def get_posts(db: Session, skip: int = 0, limit: int = 100):
-    return crud_post.get_multi(db= db, skip= skip, limit= limit)
+    return post_repo.get_multi(db= db, skip= skip, limit= limit)
 
 def update_post(db: Session,post_id: int, post_in: PostUpdate, user_id: int):
-    post =  crud_post.get(db=db, post_id=post_id)
+    post =  post_repo.get(db=db, id=post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     
@@ -21,10 +22,10 @@ def update_post(db: Session,post_id: int, post_in: PostUpdate, user_id: int):
             detail="Not authorized to update this post!"
         )
     
-    return crud_post.update(db=db, db_post=post, post_in=post_in)
+    return post_repo.update(db=db, db_obj=post, obj_in=post_in)
 
 def delete_post(db: Session, post_id: int, user_id: int):
-    post = crud_post.get(db=db, post_id=post_id)
+    post = post_repo.get(db=db, id=post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
@@ -34,5 +35,5 @@ def delete_post(db: Session, post_id: int, user_id: int):
             status_code=403,
             detail="Not authorized to update this post!"
         )
-    crud_post.remove(db=db, db_post=post)
+    post_repo.remove(db=db, db_obj=post)
     return {"message": "Post deleted successfully"}
