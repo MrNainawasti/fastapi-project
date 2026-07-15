@@ -7,8 +7,8 @@ from app.repository.post import post_repo
 def create_post(db: Session, post_in: PostCreate, user_id: int):
     return post_repo.create(db= db, obj_in= post_in, author_id=user_id)
 
-def get_posts(db: Session, skip: int = 0, limit: int = 100):
-    return post_repo.get_multi(db= db, skip= skip, limit= limit)
+def get_posts(db: Session, skip: int = 0, limit: int = 100, search:str = None):
+    return post_repo.get_multi(db= db, skip= skip, limit= limit, search=search)
 
 def update_post(db: Session,post_id: int, post_in: PostUpdate, user_id: int):
     post =  post_repo.get(db=db, id=post_id)
