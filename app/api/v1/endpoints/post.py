@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from app.api.deps import get_current_user
 from app.db.database import get_db
@@ -22,9 +22,11 @@ def create_new_post(
 def read_all_posts(
     skip: int = 0,
     limit: int = 100,
+    search: Optional[str] = None,
     db: Session = Depends(get_db),
+
 ):
-    return post_services.get_posts(db=db, skip=skip, limit=limit)
+    return post_services.get_posts(db=db, skip=skip, limit=limit, search=search)
 
 @router.put("/{post_id}", response_model=PostResponse)
 def update_post(
@@ -42,3 +44,4 @@ def delete_existing_post(
     current_user: User = Depends(get_current_user)
 ):
     return post_services.delete_post(db=db, post_id=post_id, user_id=current_user.id)
+
